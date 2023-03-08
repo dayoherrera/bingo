@@ -1,4 +1,4 @@
-console.log("App Bingo");
+//TODO: Variable usada para el llenado del carton de bingo
 let bingoArray = [
     // [13, 13, 11, 12, 4],
     // [20, 20, 28, 18, 31],
@@ -6,9 +6,34 @@ let bingoArray = [
     // [51, 61, 58, 52, 48],
     // [73, 65, 61, 66, 68]
 ];
+//TODO: Variable usada para el id de usuarios
+let userId = 0;
+let players = {};
+let starGame = false;
+
+//TODO: guardado de usuario en objeto
+function saveUser() {
+  userId ++;
+  nickName = document.getElementById('userName').value ? document.getElementById('userName').value : `Anonimo${userId}`;
+  players = {nickName: nickName, userId: userId};
+  generateCardboard();
+  document.getElementById('bingoSection').style.display = 'block';
+}
+//TODO: aceptar carton de bingo
+function acceptCardboard() {
+  document.getElementById('lotterySection').style.display = 'block';
+
+  startGameFunction();
+}
+
+//TODO: cambiar carton de bingo
+
+function changeCardboard() {
+  generateCardboard();
+}
 
 function generateCardboard() {
-  //TODO:aqui se generara el carton para el juego
+  //TODO:Se generara el carton para el juego
   for(let i=0; i< 5; i++) {
     bingoArray[i] = new Array(5);
     for (let j = 0; j < 5; j++) {
@@ -33,6 +58,7 @@ function generateCardboard() {
       }
     }   
   } 
+  bingoArray[2][2] = -1;
   setTable(bingoArray);
 }
 
@@ -47,8 +73,9 @@ function randomNumber(max,min,i){
   return value;
 }
 
+// TODO: mostrar el carton de bingo con los valores generados aleatoriamente
 function setTable(arrayBingoValues) {
-  // TODO: llenar el carton de bingo con los valores generados aleatoriamente
+  
   const newnode = document.querySelector("#table");
   newnode.innerHTML =
     '<tr class="text-center">'+
@@ -71,8 +98,8 @@ function setTable(arrayBingoValues) {
   }
 }
 
+//TODO: Se muestran valores alfanumericos alearorios de sorteo
 function randomPosition() {
-  //TODO: Se generaran valores alfanumericos alearorios para el juego
   let character;
   let value;
   let position;
@@ -82,17 +109,18 @@ function randomPosition() {
     character = characters[position];
   }
   value = this.calculator(position);
-  document.getElementById("aleatoryNumber").value = `${character}${value}`;
+  document.getElementById("aleatoryNumber").value = `${character} ${value}`;
   return value;
 }
 
-function randomAlphaNumeric(max,min,i){
-  // TODO: Se generan numeros al;eatorios
+// TODO: Se funcion general de generan numeros aleatorios
+function randomAlphaNumeric(max, min, i){
+  console.log('max: ',max, 'min: ', min,'positionCase: ', i);
   let value = Math.round(Math.random() * (max - min + 1) + min);
-
   return value;
 }
 
+// TODO: Se numeros aleatorios por letra B I N G O
 function calculator(numberCase) {
   let newNumber = 0;
   switch (numberCase) {
@@ -115,4 +143,19 @@ function calculator(numberCase) {
       break;
   }
   return newNumber;
+}
+
+//TODO: Se comienza con el juego
+function startGameFunction() {
+  starGame = true;
+  let valueChange = document.getElementById('changeCardboard');
+
+  //TODO: al ser aceptado el carton se deshabilita el boton de cambiar carton
+  if (starGame) {
+    valueChange.disabled = true;
+  }
+
+  //TODO: inicia el llamado al sorteo
+  
+  setInterval(randomPosition, 6000);
 }

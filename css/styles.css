@@ -31,9 +31,10 @@ h1{
   width: 100%;
 }
 
-.sorteo-input{
+.name-input{
   width: 100%;
   padding: 10px 0;
+  margin: 5px;
   color: #fff;
   background: transparent;
   border: none;
@@ -42,3 +43,15 @@ h1{
   font-size: 35px;
 }
 
+.lottery-input{
+  width: 50%;
+  margin: auto;
+  color: #fff;
+  background: transparent;
+  border: 1px solid #fff;
+  text-align: center;
+  font-size: 35px;
+  border-radius: 20px;
+  justify-content: center;
+  display: flex;
+}
