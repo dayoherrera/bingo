@@ -13,10 +13,13 @@ let userId = 0;
 let userName = "";
 let players = {};
 let starGame = false;
+let waitMessage = '';
+let goMessage = '';
+let usersConnected = 0;
+
 
 //TODO: guardado de usuario en objeto
 function saveUser() {
-  userId++;
   nickName = document.getElementById("userName").value
     ? document.getElementById("userName").value
     : `Anonimo${userId}`;
@@ -29,10 +32,10 @@ function saveUser() {
   generateCardboard();
   document.getElementById("bingoSection").style.display = "block";
 }
+
 //TODO: aceptar carton de bingo
 function acceptCardboard() {
   document.getElementById("lotterySection").style.display = "block";
-
   startGameFunction();
 }
 
@@ -128,13 +131,11 @@ function randomPosition() {
     character = characters[position];
   }
   value = this.calculator(position);
-  document.getElementById("aleatoryNumber").value = `${character} ${value}`;
-  return value;
+  return `${character} ${value}`;
 }
 
 // TODO: Se funcion general de generan numeros aleatorios
 function randomAlphaNumeric(max, min, i) {
-  console.log("max: ", max, "min: ", min, "positionCase: ", i);
   let value = Math.round(Math.random() * (max - min + 1) + min);
   return value;
 }
@@ -174,16 +175,46 @@ function startGameFunction() {
     valueChange.disabled = true;
   }
 
-  //TODO: inicia el llamado al sorteo
-
-  setInterval(randomPosition, 6000);
+  //TODO: inicia el llamado al sorteo   
+  setInterval(() => {
+    socket.emit("lottery", randomPosition());
+  }, 8000);
 }
 
+//TODO: sockets=========================
 socket.on("messages", function (data) {
   console.log("Cliente: ", data);
 });
 
+//TODO: usuario  uniendose al juego
 socket.on("joined-game", function (data) {
-  console.log("Me llego el id: ", data);
   userId = data.id;
 });
+
+//TODO: Escuchando Emision de broadcast
+socket.on("lottery-broadcast", function (valor) {
+  document.getElementById("aleatoryNumber").value = valor;
+});
+
+//TODO: Comprobando conexion
+socket.on("connect", () => {
+  if (socket.connected) {
+    console.log("socket.userId====>",socket.userId);
+    //emitir conexion
+  } 
+});
+
+//TODO: Escuchando Emision de espera
+socket.on("waiting", function (waitMessage) {
+  document.getElementById("waitMessage").style.display = 'block';
+  document.getElementById("waitMessage").innerHTML = waitMessage;
+  //emitir mensaje
+});
+
+
+
+
+
+
+
+

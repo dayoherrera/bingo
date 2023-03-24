@@ -12,11 +12,6 @@ app.get("/", function(req, res){
   res.status(200).send("The server is running!.");
 });
 
-server.listen(8080, function () {
-  console.log("Servidor corriendo en http://localhost:8080");
-});
-
-
 // Aqui se puede generar el carton al usuario
 // que se conectó
 io.on("connection", function (socket) {
@@ -31,13 +26,38 @@ io.on("connection", function (socket) {
       "id": this.id,
       "userName": socket.playerName,
     });
-    console.log("USERS: ", users);
+    console.log("Server USERS: ", users);
+    
+  });  
+
+  //TODO: Emitiendo numero para todos los usuarios conectados
+  socket.on("lottery", function (lotteryNumber) {
+    if(users.length>=2){
+      io.emit("lottery-broadcast", lotteryNumber); 
+      console.log();
+    }else{
+      io.emit("waiting", "Esperando mas jugadores...");
+    }
   });
+
+  //TODO: Comprobando usuarios conectados
+  if (socket.connected) {
+    console.log("Sockets conectado",socket.id);
+  }else{
+    console.log("else");
+
+    users.forEach(element => {
+      if (socket.id == element.id) {
+        console.log("socket.id == element.id");
+      }
+    });
+  }
 });
 
 
-
-
+server.listen(8080, function () {
+  console.log("Servidor corriendo en http://localhost:8080");
+});
 
 // Con esta linea se le puede notificar a todos
 // los usuarios con un mensaje
