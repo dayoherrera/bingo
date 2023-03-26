@@ -32,26 +32,28 @@ io.on("connection", function (socket) {
 
   //TODO: Emitiendo numero para todos los usuarios conectados
   socket.on("lottery", function (lotteryNumber) {
-    if(users.length>=2){
+    if(users.length > 1){
       io.emit("lottery-broadcast", lotteryNumber); 
-      console.log();
-    }else{
-      io.emit("waiting", "Esperando mas jugadores...");
+    }
+    if(users.length == 1){
+      console.log("Esperando mas jugadores...");
+      socket.emit("waiting", "Esperando mas jugadores...");
     }
   });
 
   //TODO: Comprobando usuarios conectados
   if (socket.connected) {
     console.log("Sockets conectado",socket.id);
-  }else{
-    console.log("else");
-
-    users.forEach(element => {
-      if (socket.id == element.id) {
-        console.log("socket.id == element.id");
-      }
-    });
   }
+
+  //TODO: Usuario desconectado
+  socket.on('disconnect', (reason) => {
+    let userDisconnected = users.find(element => element.id == socket.id);
+    io.emit('userDisconnected', { user: userDisconnected.userName , reason: reason});
+    //TODO: para eliminar el usuario desconectado del array
+    users = users.filter(user=> user.id != socket.id);
+    console.log("Server newUSERS: ", users);
+  });
 });
 
 

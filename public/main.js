@@ -2,11 +2,11 @@ var socket = io.connect("http://localhost:8080", { forceNew: true });
 
 //TODO: Variable usada para el llenado del carton de bingo
 let bingoArray = [
-  // [13, 13, 11, 12, 4],
-  // [20, 20, 28, 18, 31],
-  // [43, 33, 42, 41, 44],
-  // [51, 61, 58, 52, 48],
-  // [73, 65, 61, 66, 68]
+  //B[1, 13, 11, 12, 15],
+  //I[16, 20, 28, 18, 30],
+  //N[31, 33, -1, 41, 45],
+  //G[46, 61, 58, 52, 60],
+  //O[61, 65, 61, 66, 75]
 ];
 //TODO: Variable usada para el id de usuarios
 let userId = 0;
@@ -16,6 +16,7 @@ let starGame = false;
 let waitMessage = '';
 let goMessage = '';
 let usersConnected = 0;
+let winningArray = [];
 
 
 //TODO: guardado de usuario en objeto
@@ -36,17 +37,19 @@ function saveUser() {
 //TODO: aceptar carton de bingo
 function acceptCardboard() {
   document.getElementById("lotterySection").style.display = "block";
+  document.getElementById('acceptedCardboard').style.display = 'none';
+  document.getElementById('changeCardboard').style.display = 'none';
+  document.getElementById('sayBingo').style.display = 'block';
   startGameFunction();
 }
 
 //TODO: cambiar carton de bingo
-
 function changeCardboard() {
   generateCardboard();
 }
 
+//TODO:Se generara el carton para el juego
 function generateCardboard() {
-  //TODO:Se generara el carton para el juego
   for (let i = 0; i < 5; i++) {
     bingoArray[i] = new Array(5);
     for (let j = 0; j < 5; j++) {
@@ -75,8 +78,8 @@ function generateCardboard() {
   setTable(bingoArray);
 }
 
+// TODO: Se comprueba que no este ningun numero repetido para generar el carton de bingo
 function randomNumber(max, min, i) {
-  // TODO: Se comprueba que no este ningun numero repetido para generar el carton de bingo
   let value = Math.round(Math.random() * (max - min + 1) + min);
   let repeat = bingoArray[i].includes(value);
 
@@ -101,23 +104,31 @@ function setTable(arrayBingoValues) {
   for (var i = 0; i < 5; i++) {
     newnode.innerHTML +=
       '<tr class="text-center">' +
-      "<td>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[0][i] + "' onclick='checkNumber(" + arrayBingoValues[0][i] + ")' >"+
       arrayBingoValues[0][i] +
-      "</td>" +
-      "<td>" +
+      "</button></td>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[1][i] + "' onclick='checkNumber(" + arrayBingoValues[1][i] + ")'>" +
       arrayBingoValues[1][i] +
-      "</td>" +
-      "<td>" +
+      "</button></td>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[2][i] + "' onclick='checkNumber(" + arrayBingoValues[2][i] + ")'>" +
       arrayBingoValues[2][i] +
-      "</td>" +
-      "<td>" +
+      "</button></td>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[3][i] + "' onclick='checkNumber(" + arrayBingoValues[3][i] + ")'>" +
       arrayBingoValues[3][i] +
-      "</td>" +
-      "<td>" +
+      "</button></td>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[4][i] + "' onclick='checkNumber(" + arrayBingoValues[4][i] + ")'>" +
       arrayBingoValues[4][i] +
-      "</td>" +
+      "</button></td>" +
       "</tr>";
   }
+}
+
+//TODO: clic en numeros del carton de cada usuario
+function checkNumber(id) {
+  let number = id;
+  document.getElementById(`${id}`).style.backgroundColor = "#f52585";
+  document.getElementById(`${id}`).style.color = "white";
+  console.log("el numero que clickeo", number);
 }
 
 //TODO: Se muestran valores alfanumericos alearorios de sorteo
@@ -131,13 +142,24 @@ function randomPosition() {
     character = characters[position];
   }
   value = this.calculator(position);
+  this.addWinningNumbers(value);
   return `${character} ${value}`;
 }
 
 // TODO: Se funcion general de generan numeros aleatorios
 function randomAlphaNumeric(max, min, i) {
   let value = Math.round(Math.random() * (max - min + 1) + min);
+  let repeat = winningArray.includes(value);
+
+  if (repeat) {
+    value = randomAlphaNumeric(max, min, i);
+  }
   return value;
+}
+
+//TODO: Genera la vector con valores ganadores
+function addWinningNumbers(value) {
+  winningArray.push(value);
 }
 
 // TODO: Se numeros aleatorios por letra B I N G O
@@ -181,7 +203,14 @@ function startGameFunction() {
   }, 8000);
 }
 
-//TODO: sockets=========================
+//TODO: funcion para validar cantar bingo
+function sayBingo(){
+  console.log("es bingooooooooooo");
+}
+
+
+
+//TODO: sockets=========================>
 socket.on("messages", function (data) {
   console.log("Cliente: ", data);
 });
@@ -194,24 +223,24 @@ socket.on("joined-game", function (data) {
 //TODO: Escuchando Emision de broadcast
 socket.on("lottery-broadcast", function (valor) {
   document.getElementById("aleatoryNumber").value = valor;
+  document.getElementById("waitMessage").style.display = 'none';
 });
 
-//TODO: Comprobando conexion
-socket.on("connect", () => {
-  if (socket.connected) {
-    console.log("socket.userId====>",socket.userId);
-    //emitir conexion
-  } 
-});
-
-//TODO: Escuchando Emision de espera
+//TODO: Escuchando Emision de espera a mas jugadores
 socket.on("waiting", function (waitMessage) {
   document.getElementById("waitMessage").style.display = 'block';
   document.getElementById("waitMessage").innerHTML = waitMessage;
-  //emitir mensaje
 });
 
+//TODO: que usuario se desconecto del servidor
+socket.on('userDisconnected', (data) => {
+  document.getElementById("userDisconnected").style.display = 'block';
+  document.getElementById("userDisconnected").innerHTML = `${data.user} ha abandonado el juego`;
 
+  setTimeout(function(){
+    document.getElementById("userDisconnected").style.display = 'none';
+  }, 5000);
+});
 
 
 
