@@ -48,11 +48,21 @@ io.on("connection", function (socket) {
 
   //TODO: Usuario desconectado
   socket.on('disconnect', (reason) => {
-    let userDisconnected = users.find(element => element.id == socket.id);
-    io.emit('userDisconnected', { user: userDisconnected.userName , reason: reason});
-    //TODO: para eliminar el usuario desconectado del array
-    users = users.filter(user=> user.id != socket.id);
-    console.log("Server newUSERS: ", users);
+    
+    if(users.length > 0 ){
+      let userDisconnected = users.find(element => element.id == socket.id);
+      let userName = '';
+      if(userDisconnected.userName){
+        userName = userDisconnected.userName;
+      }
+      io.emit('userDisconnected', { user: userName , reason: reason});
+      //TODO: para eliminar el usuario desconectado del array
+      console.log("El usuario '" + userName + "' se ha sido desconectado");
+      users = users.filter(user=> user.id != socket.id);
+      console.log("Server newUSERS: ", users);
+    }else{
+      console.log("Usuario con este id '" + socket.id + "' ha sido desconectado");
+    }
   });
 });
 
