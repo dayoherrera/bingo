@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="./css/styles.css" rel="stylesheet">
     <title>Bingo</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./main.js"></script>
   </head>
   <body>
     <div class="container">
@@ -19,6 +21,9 @@
         <button class="btn btn-style" onclick="saveUser()">Guardar Usuario</button>
       </div>
     </div> 
+
+    <h1 id="waitMessage" class="text-center" style="display: none;"></h1>
+    <h1 id="userDisconnected" class="text-center" style="display: none;"></h1>
 
     <div class="container">      
       <h1 class="text-center" >Bingo!</h1>  
@@ -33,10 +38,13 @@
           </table>
         </div>
         <div class="mt-5">
-          <button class="btn btn-style" onclick="acceptCardboard()">Aceptar Carton de Bingo</button>
+          <button class="btn btn-style" onclick="acceptCardboard()" id="acceptedCardboard">Aceptar Carton de Bingo</button>
         </div> 
         <div class="mt-2">
           <button class="btn btn-style" onclick="changeCardboard()" id="changeCardboard">Cambiar Carton de Bingo</button>
+        </div>
+        <div class="mt-2" >
+          <button class="btn btn-style" onclick="sayBingo()" id="sayBingo" style="display: none;" disabled>¡¡¡ Canta Bingo !!!</button>
         </div>
       </section>
     </div>
