@@ -57,7 +57,7 @@ io.on("connection", function (socket) {
       }
       io.emit('userDisconnected', { user: userName , reason: reason});
       //TODO: para eliminar el usuario desconectado del array
-      console.log("El usuario '" + userName + "' se ha sido desconectado");
+      console.log("El usuario '" + userName + "' ha sido desconectado");
       users = users.filter(user=> user.id != socket.id);
       console.log("Server newUSERS: ", users);
     }else{
