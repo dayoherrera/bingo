@@ -4,7 +4,8 @@ var server = require("http").Server(app);
 var io = require("socket.io")(server);
 
 let users = [];
-
+let winningArray = []; //Para probar 1,11,31,46,61,10,20,30,51,67,11,28,40,59,63,12,18,42,52,66,15,30,45,60,75
+let n = 75;
 
 app.use(express.static("public"));
 
@@ -31,31 +32,100 @@ io.on("connection", function (socket) {
   });  
 
   //TODO: Emitiendo numero para todos los usuarios conectados
-  socket.on("lottery", function (lotteryNumber) {
-    if(users.length > 1){
-      io.emit("lottery-broadcast", lotteryNumber); 
+  socket.on("accept-cardboard", function (acceptCardboard) {
+    console.log('acceptCardboard: ', acceptCardboard);
+    if(  acceptCardboard && users.length > 1){
+      //TODO: Se muestran valores alfanumericos alearorios de sorteo
+      setInterval(() => { 
+        let character;
+        let number;
+        let position;
+        const characters = ["B", "I", "N", "G", "O"];
+        for (let i = 0; i < 5; i++) {
+          position = Math.round(Math.random() * (4 - 0));
+          character = characters[position];
+        }
+
+        switch (position) {
+          case 0:
+            number = randomAlphaNumeric(15, 1, position);
+            break;
+          case 1:
+            number = randomAlphaNumeric(30, 16, position);
+            break;
+          case 2:
+            number = randomAlphaNumeric(45, 31, position);
+            break;
+          case 3:
+            number = randomAlphaNumeric(60, 46, position);
+            break;
+          case 4:
+            number = randomAlphaNumeric(75, 61, position);
+            break;
+          default:
+            break;
+        }
+        
+        // TODO: Se funcion general de generan numeros aleatorios
+        function randomAlphaNumeric(max, min, i) {
+          let value = Math.round(Math.random() * (max - min) + min);
+          let repeat = winningArray.includes(value);   
+
+          if(n === 0) return winningArray;
+          if (repeat) {
+            n=n;
+            return value = randomAlphaNumeric(max, min, i);
+          }else{
+            n=n-1;
+            winningArray.push(value); 
+            return value;
+          }
+        }
+        io.emit("lottery-broadcast", character, number);
+      }, 6000);
     }
-    if(users.length == 1){
-      console.log("Esperando mas jugadores...");
+    if(users.length == 1 && acceptCardboard){
       socket.emit("waiting", "Esperando mas jugadores...");
     }
   });
-
+  
   //TODO: Comprobando usuarios conectados
   if (socket.connected) {
-    console.log("Sockets conectado",socket.id);
   }
 
   //TODO: Usuario desconectado
   socket.on('disconnect', (reason) => {
     let userDisconnected = users.find(element => element.id == socket.id);
-    io.emit('userDisconnected', { user: userDisconnected.userName , reason: reason});
-    //TODO: para eliminar el usuario desconectado del array
-    users = users.filter(user=> user.id != socket.id);
-    console.log("Server newUSERS: ", users);
+    if(userDisconnected){
+      io.emit('userDisconnected', { user: userDisconnected.userName , reason: reason});
+      //TODO: para eliminar el usuario desconectado del array
+      users = users.filter(user=> user.id != socket.id);
+      console.log("Server newUSERS: ", users);
+    }
+    
   });
-});
 
+  //TODO: Unirse a una sala y obtener el ID de la sala
+  socket.on("join-room", (room, id) => {
+    socket.join(room);
+    const roomAdapter = io.of("/").adapter.rooms[room];
+    const roomId = roomAdapter ? roomAdapter.id : null;
+  });
+
+  //TODO: Salir de una sala al presionar el boton salir
+  socket.on('leave', (room) => {
+    socket.leave(room);
+    console.log(`El usuario ha salido de la sala: ${room}`);
+  });
+
+  //TODO: Enviar un mensaje a la sala
+  socket.on('message', (room, message) => {
+    io.to(room).emit('message', message);
+  });
+
+ 
+
+});
 
 server.listen(8080, function () {
   console.log("Servidor corriendo en http://localhost:8080");

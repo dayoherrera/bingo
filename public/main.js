@@ -2,22 +2,23 @@ var socket = io.connect("http://localhost:8080", { forceNew: true });
 
 //TODO: Variable usada para el llenado del carton de bingo
 let bingoArray = [
-  //B[1, 13, 11, 12, 15],
-  //I[16, 20, 28, 18, 30],
-  //N[31, 33, -1, 41, 45],
-  //G[46, 61, 58, 52, 60],
-  //O[61, 65, 61, 66, 75]
+  // [1, 13, 11, 12, 15],//B
+  // [16, 20, 28, 18, 30],//I
+  // [31, 33, -1, 41, 45],//N
+  // [46, 50, 58, 52, 60],//G
+  // [61, 65, 62, 66, 75]//O
 ];
-//TODO: Variable usada para el id de usuarios
+//TODO: Variables
 let userId = 0;
 let userName = "";
 let players = {};
 let starGame = false;
 let waitMessage = '';
-let goMessage = '';
-let usersConnected = 0;
 let winningArray = [];
-
+const room = 'bingo';
+let aceptGame = false;
+let countdp = 0;
+let stopGame = false;
 
 //TODO: guardado de usuario en objeto
 function saveUser() {
@@ -32,15 +33,24 @@ function saveUser() {
   players = { nickName: nickName, userId: userId };
   generateCardboard();
   document.getElementById("bingoSection").style.display = "block";
+  document.getElementById("saveUser").disabled = true;
 }
 
 //TODO: aceptar carton de bingo
 function acceptCardboard() {
+  aceptGame = true;
+  socket.emit('join-room', room);
+  socket.emit('accept-cardboard', aceptGame);
+  document.getElementById('messages').innerHTML = `Se ha unido al ${room}`;
   document.getElementById("lotterySection").style.display = "block";
   document.getElementById('acceptedCardboard').style.display = 'none';
   document.getElementById('changeCardboard').style.display = 'none';
   document.getElementById('sayBingo').style.display = 'block';
+  setTimeout(function(){
+    document.getElementById('messages').style.display = 'none';
+  }, 5000);
   startGameFunction();
+
 }
 
 //TODO: cambiar carton de bingo
@@ -80,7 +90,7 @@ function generateCardboard() {
 
 // TODO: Se comprueba que no este ningun numero repetido para generar el carton de bingo
 function randomNumber(max, min, i) {
-  let value = Math.round(Math.random() * (max - min + 1) + min);
+  let value = Math.round(Math.random() * (max - min) + min);
   let repeat = bingoArray[i].includes(value);
 
   if (repeat) {
@@ -104,88 +114,61 @@ function setTable(arrayBingoValues) {
   for (var i = 0; i < 5; i++) {
     newnode.innerHTML +=
       '<tr class="text-center">' +
-      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[0][i] + "' onclick='checkNumber(" + arrayBingoValues[0][i] + ")' >"+
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[0][i] + "' >"+
       arrayBingoValues[0][i] +
       "</button></td>" +
-      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[1][i] + "' onclick='checkNumber(" + arrayBingoValues[1][i] + ")'>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[1][i] + "' >" +
       arrayBingoValues[1][i] +
       "</button></td>" +
-      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[2][i] + "' onclick='checkNumber(" + arrayBingoValues[2][i] + ")'>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[2][i] + "' >" +
       arrayBingoValues[2][i] +
       "</button></td>" +
-      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[3][i] + "' onclick='checkNumber(" + arrayBingoValues[3][i] + ")'>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[3][i] + "' >" +
       arrayBingoValues[3][i] +
       "</button></td>" +
-      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[4][i] + "' onclick='checkNumber(" + arrayBingoValues[4][i] + ")'>" +
+      "<td><button class='btn btn-outline-secondary' type='button' id='" + arrayBingoValues[4][i] + "' >" +
       arrayBingoValues[4][i] +
       "</button></td>" +
       "</tr>";
   }
 }
 
-//TODO: clic en numeros del carton de cada usuario
-function checkNumber(id) {
-  let number = id;
-  document.getElementById(`${id}`).style.backgroundColor = "#f52585";
-  document.getElementById(`${id}`).style.color = "white";
-  console.log("el numero que clickeo", number);
-}
-
-//TODO: Se muestran valores alfanumericos alearorios de sorteo
-function randomPosition() {
-  let character;
-  let value;
-  let position;
-  const characters = ["B", "I", "N", "G", "O"];
-  for (let i = 0; i < 5; i++) {
-    position = Math.round(Math.random() * (4 - 0));
-    character = characters[position];
-  }
-  value = this.calculator(position);
-  this.addWinningNumbers(value);
-  return `${character} ${value}`;
-}
-
-// TODO: Se funcion general de generan numeros aleatorios
-function randomAlphaNumeric(max, min, i) {
-  let value = Math.round(Math.random() * (max - min + 1) + min);
-  let repeat = winningArray.includes(value);
-
-  if (repeat) {
-    value = randomAlphaNumeric(max, min, i);
-  }
-  return value;
-}
-
-//TODO: Genera la vector con valores ganadores
+//TODO: Genera el vector con valores ganadores
 function addWinningNumbers(value) {
   winningArray.push(value);
+  this.winner(value,bingoArray);
 }
 
-// TODO: Se numeros aleatorios por letra B I N G O
-function calculator(numberCase) {
-  let newNumber = 0;
-  switch (numberCase) {
-    case 0:
-      newNumber = this.randomAlphaNumeric(15, 1, numberCase);
-      break;
-    case 1:
-      newNumber = this.randomAlphaNumeric(30, 16, numberCase);
-      break;
-    case 2:
-      newNumber = this.randomAlphaNumeric(45, 31, numberCase);
-      break;
-    case 3:
-      newNumber = this.randomAlphaNumeric(60, 46, numberCase);
-      break;
-    case 4:
-      newNumber = this.randomAlphaNumeric(75, 61, numberCase);
-      break;
-    default:
-      break;
+//TODO: comprueba si hay o no ganador
+function winner(value,bingoArray) { 
+  
+  for(let i = 0; i < bingoArray.length; i++) {
+    for(let j = 0; j < bingoArray[i].length; j++) {
+      // TODO: Comparamos cada valor de la matriz con el número especificado
+      if(bingoArray[i][j] === value) {
+        document.getElementById(`${bingoArray[i][j]}`).style.backgroundColor = "#f52585";
+        document.getElementById(`${bingoArray[i][j]}`).style.color = "white";
+        
+        //TODO: case diagonal principal
+        if(i === j && bingoArray[2][2] === -1){
+          countdp++;
+          console.log("Valor de countdp en Case", countdp);
+        }
+        if (countdp === 4) {
+          document.getElementById(`${bingoArray[2][2]}`).style.backgroundColor = "#f52585";
+          document.getElementById(`${bingoArray[2][2]}`).style.color = "white";
+          stopGame = true;
+        }
+
+        
+      }
+    }
   }
-  return newNumber;
+  if (stopGame) {
+    console.log("ganador para el caso anterior stop Game");
+  }
 }
+
 
 //TODO: Se comienza con el juego
 function startGameFunction() {
@@ -196,11 +179,12 @@ function startGameFunction() {
   if (starGame) {
     valueChange.disabled = true;
   }
-
   //TODO: inicia el llamado al sorteo   
-  setInterval(() => {
-    socket.emit("lottery", randomPosition());
-  }, 8000);
+  socket.on('lottery-broadcast', (character,value) => {
+    addWinningNumbers(value);
+    document.getElementById("aleatoryNumber").value = `${character}${value}`;
+    document.getElementById("waitMessage").style.display = 'none';
+  });
 }
 
 //TODO: funcion para validar cantar bingo
@@ -208,7 +192,14 @@ function sayBingo(){
   console.log("es bingooooooooooo");
 }
 
-
+//TODO: Salir de la sala
+function leaveBingoRoom() {
+  socket.emit('leave', room);
+  document.getElementById('messages').innerHTML = `Ha salido del ${room}`;
+  setTimeout(function(){
+    document.getElementById('messages').style.display = 'none';
+  }, 5000);
+}
 
 //TODO: sockets=========================>
 socket.on("messages", function (data) {
@@ -220,11 +211,6 @@ socket.on("joined-game", function (data) {
   userId = data.id;
 });
 
-//TODO: Escuchando Emision de broadcast
-socket.on("lottery-broadcast", function (valor) {
-  document.getElementById("aleatoryNumber").value = valor;
-  document.getElementById("waitMessage").style.display = 'none';
-});
 
 //TODO: Escuchando Emision de espera a mas jugadores
 socket.on("waiting", function (waitMessage) {
@@ -241,9 +227,3 @@ socket.on('userDisconnected', (data) => {
     document.getElementById("userDisconnected").style.display = 'none';
   }, 5000);
 });
-
-
-
-
-
-
