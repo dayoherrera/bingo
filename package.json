@@ -2,16 +2,17 @@
   "name": "bingo",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server/main.js",
   "scripts": {
-    "start": "nodemon server/main.js"
+    "dev": "nodemon server/main.js",
+    "start": "node server/main.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rebecam24/bingo.git"
   },
   "keywords": [],
-  "author": "Rebeca-Dayona-Alexander",
+  "author": "Rebeca-Dayona",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/rebecam24/bingo/issues"
