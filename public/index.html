@@ -13,18 +13,22 @@
     <script src="./main.js"></script>
   </head>
   <body>
+    <div class="container d-flex justify-content-end">
+      <i class="fa-regular fa-arrow-right-from-bracket text-white"></i>
+      <button id="leave" class="btn btn-style w-25" onclick="leaveBingoRoom()">Salir</button>
+    </div>
     <div class="container">
       <h1 class="text-center" >Juego de Bingo!</h1>  
 
       <input class="name-input" type="text" name="userName" id="userName" placeholder="Ingresa un nickname">
       <div class="mt-5">
-        <button class="btn btn-style" onclick="saveUser()">Guardar Usuario</button>
+        <button class="btn btn-style" onclick="saveUser()" id="saveUser">Guardar Usuario</button>
       </div>
     </div> 
 
     <h1 id="waitMessage" class="text-center" style="display: none;"></h1>
     <h1 id="userDisconnected" class="text-center" style="display: none;"></h1>
-
+    <h1 id="messages" class="text-center"></h1>
     <div class="container">      
       <h1 class="text-center" >Bingo!</h1>  
 
