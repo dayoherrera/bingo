@@ -1,4 +1,4 @@
-var socket = io.connect("http://localhost:8080", { forceNew: true });
+var socket = io.connect(process.env.SERVER_URL || "http://localhost:8080", { forceNew: true });
 
 //TODO: Variable usada para el llenado del carton de bingo
 let bingoArray = [
