@@ -48,7 +48,7 @@ function acceptCardboard() {
   document.getElementById('sayBingo').style.display = 'block';
   setTimeout(function(){
     document.getElementById('messages').style.display = 'none';
-  }, 5000);
+  }, 3000);
   startGameFunction();
 
 }
@@ -198,7 +198,7 @@ function leaveBingoRoom() {
   document.getElementById('messages').innerHTML = `Ha salido del ${room}`;
   setTimeout(function(){
     document.getElementById('messages').style.display = 'none';
-  }, 5000);
+  }, 3000);
 }
 
 //TODO: sockets=========================>
@@ -225,5 +225,5 @@ socket.on('userDisconnected', (data) => {
 
   setTimeout(function(){
     document.getElementById("userDisconnected").style.display = 'none';
-  }, 5000);
+  }, 3000);
 });
