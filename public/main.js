@@ -2,11 +2,11 @@ var socket = io.connect("https://bingo-production-971d.up.railway.app", { forceN
 
 //TODO: Variable usada para el llenado del carton de bingo
 let bingoArray = [
-  // [1, 13, 11, 12, 15],//B
-  // [16, 20, 28, 18, 30],//I
-  // [31, 33, -1, 41, 45],//N
-  // [46, 50, 58, 52, 60],//G
-  // [61, 65, 62, 66, 75]//O
+  //  [1, 13, 11, 12, 15],//B
+  //   [16, 20, 28, 18, 30],//I
+  //  [31, 33, -1, 41, 45],//N
+  //  [46, 50, 58, 52, 60],//G
+  //  [61, 65, 62, 66, 75]//O
 ];
 //TODO: Variables
 let userId = 0;
@@ -45,7 +45,6 @@ function acceptCardboard() {
   document.getElementById("lotterySection").style.display = "block";
   document.getElementById('acceptedCardboard').style.display = 'none';
   document.getElementById('changeCardboard').style.display = 'none';
-  document.getElementById('sayBingo').style.display = 'block';
   setTimeout(function(){
     document.getElementById('messages').style.display = 'none';
   }, 3000);
@@ -84,7 +83,7 @@ function generateCardboard() {
       }
     }
   }
-  bingoArray[2][2] = -1;
+  // bingoArray[2][2] = -1;
   setTable(bingoArray);
 }
 
@@ -146,27 +145,35 @@ function winner(value,bingoArray) {
     for(let j = 0; j < bingoArray[i].length; j++) {
       // TODO: Comparamos cada valor de la matriz con el número especificado
       if(bingoArray[i][j] === value) {
-        document.getElementById(`${bingoArray[i][j]}`).style.backgroundColor = "#f52585";
-        document.getElementById(`${bingoArray[i][j]}`).style.color = "white";
+        if(!stopGame){
+          document.getElementById(`${bingoArray[i][j]}`).style.backgroundColor = "#f52585";
+          document.getElementById(`${bingoArray[i][j]}`).style.color = "white";
+        }     
         
         //TODO: case diagonal principal
-        if(i === j && bingoArray[2][2] === -1){
+        if(i === j){
           countdp++;
-          console.log("Valor de countdp en Case", countdp);
         }
         if (countdp === 4) {
-          document.getElementById(`${bingoArray[2][2]}`).style.backgroundColor = "#f52585";
-          document.getElementById(`${bingoArray[2][2]}`).style.color = "white";
           stopGame = true;
-        }
-
-        
+          socket.emit("winnerGame",{ bingo: bingoArray, userName: userName });
+        }        
       }
     }
   }
-  if (stopGame) {
-    console.log("ganador para el caso anterior stop Game");
+  for(let i = 0; i < bingoArray.length; i++) {
+    if(winningArray.includes(bingoArray[i][0]) && winningArray.includes(bingoArray[i][1]) && winningArray.includes(bingoArray[i][2]) && winningArray.includes(bingoArray[i][3]) && winningArray.includes(bingoArray[i][4])) {
+      document.getElementById("aleatoryNumber").value = '';
+      socket.emit("winnerGame",{ bingo: bingoArray, userName: userName });
+      return true;
+    }
+    if(winningArray.includes(bingoArray[0][i]) && winningArray.includes(bingoArray[1][i]) && winningArray.includes(bingoArray[2][i]) && winningArray.includes(bingoArray[3][i]) && winningArray.includes(bingoArray[4][i])) {
+      document.getElementById("aleatoryNumber").value = '';  
+      socket.emit("winnerGame",{ bingo: bingoArray, userName: userName });
+      return true;
+    }
   }
+  return false;
 }
 
 
@@ -189,7 +196,7 @@ function startGameFunction() {
 
 //TODO: funcion para validar cantar bingo
 function sayBingo(){
-  console.log("es bingooooooooooo");
+  
 }
 
 //TODO: Salir de la sala
@@ -226,4 +233,10 @@ socket.on('userDisconnected', (data) => {
   setTimeout(function(){
     document.getElementById("userDisconnected").style.display = 'none';
   }, 3000);
+});
+
+//TODO: Escuchando Emision de Ganador
+socket.on("userWinner", function (winner) {
+  document.getElementById("userWinner").style.display = 'block';
+  document.getElementById("userWinner").innerHTML = `Ganador ${winner}`;
 });

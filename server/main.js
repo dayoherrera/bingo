@@ -4,8 +4,9 @@ var server = require("http").Server(app);
 var io = require("socket.io")(server);
 
 let users = [];
-let winningArray = []; //Para probar 1,11,31,46,61,10,20,30,51,67,11,28,40,59,63,12,18,42,52,66,15,30,45,60,75
+let winningArray = []; //Para probar1, 16, 31, 46, 61 
 let n = 75;
+let flagEnd = false;
 
 app.use(express.static("public"));
 
@@ -34,59 +35,62 @@ io.on("connection", function (socket) {
   //TODO: Emitiendo numero para todos los usuarios conectados
   socket.on("accept-cardboard", function (acceptCardboard) {
     console.log('acceptCardboard: ', acceptCardboard);
-    if(  acceptCardboard && users.length > 1){
-      //TODO: Se muestran valores alfanumericos alearorios de sorteo
-      setInterval(() => { 
-        let character;
-        let number;
-        let position;
-        const characters = ["B", "I", "N", "G", "O"];
-        for (let i = 0; i < 5; i++) {
-          position = Math.round(Math.random() * (4 - 0));
-          character = characters[position];
-        }
-
-        switch (position) {
-          case 0:
-            number = randomAlphaNumeric(15, 1, position);
-            break;
-          case 1:
-            number = randomAlphaNumeric(30, 16, position);
-            break;
-          case 2:
-            number = randomAlphaNumeric(45, 31, position);
-            break;
-          case 3:
-            number = randomAlphaNumeric(60, 46, position);
-            break;
-          case 4:
-            number = randomAlphaNumeric(75, 61, position);
-            break;
-          default:
-            break;
-        }
-        
-        // TODO: Se funcion general de generan numeros aleatorios
-        function randomAlphaNumeric(max, min, i) {
-          let value = Math.round(Math.random() * (max - min) + min);
-          let repeat = winningArray.includes(value);   
-
-          if(n === 0) return winningArray;
-          if (repeat) {
-            n=n;
-            return value = randomAlphaNumeric(max, min, i);
-          }else{
-            n=n-1;
-            winningArray.push(value); 
-            return value;
+      if( acceptCardboard && users.length > 1){
+        //TODO: Se muestran valores alfanumericos alearorios de sorteo
+        setInterval(() => { 
+          let character;
+          let number;
+          let position;
+          const characters = ["B", "I", "N", "G", "O"];
+          for (let i = 0; i < 5; i++) {
+            position = Math.round(Math.random() * (4 - 0));
+            character = characters[position];
           }
-        }
-        io.emit("lottery-broadcast", character, number);
-      }, 6000);
-    }
-    if(users.length == 1 && acceptCardboard){
-      socket.emit("waiting", "Esperando mas jugadores...");
-    }
+  
+          switch (position) {
+            case 0:
+              number = randomAlphaNumeric(15, 1, position);
+              break;
+            case 1:
+              number = randomAlphaNumeric(30, 16, position);
+              break;
+            case 2:
+              number = randomAlphaNumeric(45, 31, position);
+              break;
+            case 3:
+              number = randomAlphaNumeric(60, 46, position);
+              break;
+            case 4:
+              number = randomAlphaNumeric(75, 61, position);
+              break;
+            default:
+              break;
+          }
+          
+          // TODO: Se funcion general de generan numeros aleatorios
+          function randomAlphaNumeric(max, min, i) {
+            let value = Math.round(Math.random() * (max - min) + min);
+            let repeat = winningArray.includes(value);   
+  
+            if(n === 0) return winningArray;
+            if (repeat) {
+              n=n;
+              return value = randomAlphaNumeric(max, min, i);
+            }else{
+              n=n-1;
+              winningArray.push(value); 
+              return value;
+            }
+          }
+          if(flagEnd === false){
+            io.emit("lottery-broadcast", character, number);
+
+          }
+        }, 1000);
+      }
+      if(users.length == 1 && acceptCardboard){
+        socket.emit("waiting", "Esperando mas jugadores...");
+      }  
   });
   
   //TODO: Comprobando usuarios conectados
@@ -130,7 +134,11 @@ io.on("connection", function (socket) {
     io.to(room).emit('message', message);
   });
 
- 
+  socket.on("winnerGame",(objFinal)=>{
+    flagEnd = true;
+    console.log("objFinal",objFinal);
+    io.emit("userWinner", objFinal.userName);
+  });
 
 });
 
