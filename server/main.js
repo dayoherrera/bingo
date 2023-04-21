@@ -86,7 +86,7 @@ io.on("connection", function (socket) {
             io.emit("lottery-broadcast", character, number);
 
           }
-        }, 1000);
+        }, 3000);
       }
       if(users.length == 1 && acceptCardboard){
         socket.emit("waiting", "Esperando mas jugadores...");
